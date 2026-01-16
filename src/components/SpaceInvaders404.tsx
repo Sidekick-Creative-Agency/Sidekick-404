@@ -40,6 +40,14 @@ interface ConfettiParticle {
     radius: number;
 }
 
+interface LeaderboardEntry {
+    id: number;
+    initials: string;
+    score: number;
+    level: number;
+    createdAt: string;
+}
+
 const GAME_WIDTH = 1920; // Fixed game resolution width
 const GAME_HEIGHT = 1080; // Fixed game resolution height
 const PLAYER_SIZE = 50;
@@ -72,6 +80,7 @@ export default function SpaceInvaders404() {
     const [fastShot, setFastShot] = useState(false);
     const [initials, setInitials] = useState('');
     const [initialsSubmitted, setInitialsSubmitted] = useState(false);
+    const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
 
     const playerRef = useRef<Position>({ x: 0, y: 0 });
     const enemiesRef = useRef<Enemy[]>([]);
@@ -104,6 +113,23 @@ export default function SpaceInvaders404() {
                 setFastShot(true);
             }
         }
+    }, []);
+
+    // Fetch leaderboard data
+    useEffect(() => {
+        const fetchLeaderboard = async () => {
+            try {
+                const response = await fetch('/api/leaderboard');
+                if (response.ok) {
+                    const data = await response.json();
+                    setLeaderboardData(data.leaderboard || []);
+                }
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+            }
+        };
+
+        fetchLeaderboard();
     }, []);
 
     useEffect(() => {
@@ -201,12 +227,43 @@ export default function SpaceInvaders404() {
         enemyShootTimerRef.current = 0;
     };
 
-    const handleInitialsSubmit = (e: React.FormEvent) => {
+    const handleInitialsSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (initials.trim().length > 0) {
-            setInitialsSubmitted(true);
-            // Here you could save to localStorage or send to an API
-            console.log('Player initials:', initials, 'Score:', score, 'Level:', level);
+            try {
+                const response = await fetch('/api/leaderboard', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        initials: initials.toUpperCase(),
+                        score,
+                        level,
+                    }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Leaderboard entry saved:', data);
+                    setInitialsSubmitted(true);
+
+                    // Refresh leaderboard
+                    const leaderboardResponse = await fetch('/api/leaderboard');
+                    if (leaderboardResponse.ok) {
+                        const leaderboardData = await leaderboardResponse.json();
+                        setLeaderboardData(leaderboardData.leaderboard || []);
+                    }
+                } else {
+                    console.error('Failed to save leaderboard entry');
+                    // Still allow them to continue
+                    setInitialsSubmitted(true);
+                }
+            } catch (error) {
+                console.error('Error saving leaderboard entry:', error);
+                // Still allow them to continue
+                setInitialsSubmitted(true);
+            }
         }
     };
 
@@ -614,6 +671,23 @@ export default function SpaceInvaders404() {
                 <div className="absolute bottom-8">
                     <img src={sidekickLogo.src} alt="Sidekick" />
                 </div>
+
+                {/* Leaderboard in bottom-left */}
+                {leaderboardData.length > 0 && (
+                    <div className="fixed bottom-8 left-8 bg-white!/10 bg-opacity-50 px-6 py-6 rounded-lg text-sm backdrop-blur-sm max-w-xs" style={{ boxShadow: 'inset 1px 1px 1px -1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px -1px rgba(255, 255, 255, 0.5)' }}>
+                        <h3 className="text-lg font-bold mb-4 text-center">Top Scores</h3>
+                        <div className="space-y-2">
+                            {leaderboardData.slice(0, 10).map((entry, index) => (
+                                <div key={entry.id} className="flex items-center justify-between gap-4">
+                                    <span className="text-white!/60 font-mono text-xs">{index + 1}.</span>
+                                    <span className="font-bold tracking-wider">{entry.initials}</span>
+                                    <span className="flex-1 text-right">{entry.score.toLocaleString()}</span>
+                                    <span className="text-white!/60 text-xs">L{entry.level}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Instructions box in bottom-right with close button */}
                 {showInstructions && (

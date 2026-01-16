@@ -2,5 +2,15 @@
   "name": "cosmic-builder-dry-run",
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2025-03-03",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+
+    "d1_databases": [
+        {
+        "binding": "DB",
+        "database_name": "404_leaderboard",
+        "database_id": "27d2ded9-37fa-4081-9e4b-09b801a8eb91",
+        "migrations_dir": "./db/migrations"
+        }
+    ]
+
 }
