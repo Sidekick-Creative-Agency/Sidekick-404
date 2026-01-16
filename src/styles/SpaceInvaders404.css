@@ -1,0 +1,417 @@
+.space-invaders-container {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	color: #ffffff;
+	overflow: hidden;
+}
+
+.start-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	gap: 2rem;
+	max-width: 800px;
+	padding: 2rem;
+	animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.large-404 {
+	width: 100%;
+	max-width: 600px;
+	height: auto;
+	margin: 2rem 0;
+}
+
+.villain-icons {
+	display: flex;
+	gap: 1.5rem;
+	margin-bottom: 1rem;
+	animation: floatAnimation 3s ease-in-out infinite;
+}
+
+@keyframes floatAnimation {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-10px);
+	}
+}
+
+.villain-icon {
+	width: 48px;
+	height: 48px;
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.villain-icon:nth-child(1) {
+	animation-delay: 0s;
+}
+
+.villain-icon:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.villain-icon:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+.villain-icon:nth-child(4) {
+	animation-delay: 0.6s;
+}
+
+.villain-icon:nth-child(5) {
+	animation-delay: 0.8s;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 0.8;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.1);
+	}
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+.start-text {
+	margin-bottom: 2rem;
+}
+
+.error-message {
+	font-size: 1.25rem;
+	font-weight: 400;
+	margin-bottom: 0.5rem;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.error-message em {
+	font-style: italic;
+	font-weight: 500;
+}
+
+.subtitle {
+	font-size: 1rem;
+	font-weight: 600;
+	color: white;
+	margin: 0;
+}
+
+.button-group {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary {
+	padding: 0.875rem 2rem;
+	font-size: 1rem;
+	font-weight: 600;
+	border-radius: 9999px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-family: inherit;
+	white-space: nowrap;
+}
+
+.btn-primary {
+	background-color: white;
+	color: #000;
+}
+
+.btn-primary:hover {
+	background-color: #f0f0f0;
+	transform: translateY(-2px);
+	box-shadow: 0 10px 25px rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:active {
+	transform: translateY(0);
+}
+
+.btn-secondary {
+	background-color: transparent;
+	color: white;
+	border: 2px solid white;
+}
+
+.btn-secondary:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+	transform: translateY(-2px);
+}
+
+.btn-secondary:active {
+	transform: translateY(0);
+}
+
+.sidekick-icon {
+	margin-top: 2rem;
+}
+
+.sidekick-icon img {
+	width: 48px;
+	height: 48px;
+	opacity: 0.6;
+}
+
+.instructions {
+	position: fixed;
+	bottom: 2rem;
+	right: 2rem;
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(10px);
+	padding: 1.5rem;
+	border-radius: 12px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.instructions p {
+	margin: 0.5rem 0;
+	font-size: 0.9rem;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.close-instructions {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.75rem;
+	background: transparent;
+	border: none;
+	color: white;
+	font-size: 1.5rem;
+	cursor: pointer;
+	padding: 0;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0.6;
+	transition: opacity 0.2s;
+}
+
+.close-instructions:hover {
+	opacity: 1;
+}
+
+.game-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	gap: 1rem;
+}
+
+.game-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	max-width: 1000px;
+	padding: 1rem 2rem;
+}
+
+.score {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: white;
+	text-shadow: 0 2px 10px rgba(0, 255, 0, 0.5);
+}
+
+.game-canvas {
+	border: 2px solid rgba(255, 255, 255, 0.1);
+	border-radius: 12px;
+	background: rgba(0, 0, 0, 0.3);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.end-screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	gap: 1.5rem;
+	max-width: 800px;
+	padding: 2rem;
+	animation: fadeIn 0.5s ease-in;
+}
+
+.end-screen h2 {
+	font-size: 3rem;
+	font-weight: 700;
+	margin: 0;
+	background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.final-score {
+	font-size: 2rem;
+	font-weight: 700;
+	color: #00ff00;
+	margin: 0;
+	text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.end-message {
+	font-size: 1.25rem;
+	color: rgba(255, 255, 255, 0.8);
+	margin: 0;
+}
+
+@media (max-width: 768px) {
+	.start-screen,
+	.end-screen {
+		padding: 1rem;
+		gap: 1.5rem;
+	}
+
+	.villain-icons {
+		gap: 1rem;
+	}
+
+	.villain-icon {
+		width: 36px;
+		height: 36px;
+	}
+
+	.large-404 {
+		max-width: 400px;
+	}
+
+	.error-message {
+		font-size: 1rem;
+	}
+
+	.subtitle {
+		font-size: 0.9rem;
+	}
+
+	.btn-primary,
+	.btn-secondary {
+		padding: 0.75rem 1.5rem;
+		font-size: 0.9rem;
+	}
+
+	.button-group {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.btn-primary,
+	.btn-secondary {
+		width: 100%;
+		max-width: 300px;
+	}
+
+	.instructions {
+		bottom: 1rem;
+		right: 1rem;
+		left: 1rem;
+		padding: 1rem;
+	}
+
+	.game-canvas {
+		width: 100% !important;
+		height: auto !important;
+		max-width: 100vw;
+		max-height: 70vh;
+	}
+
+	.game-header {
+		padding: 0.5rem 1rem;
+	}
+
+	.score {
+		font-size: 1.25rem;
+	}
+
+	.end-screen h2 {
+		font-size: 2rem;
+	}
+
+	.final-score {
+		font-size: 1.5rem;
+	}
+
+	.end-message {
+		font-size: 1rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.villain-icon {
+		width: 28px;
+		height: 28px;
+	}
+
+	.large-404 {
+		max-width: 300px;
+	}
+
+	.subtitle {
+		font-size: 1.2rem;
+	}
+
+	.start-button,
+	.restart-button {
+		padding: 0.8rem 2rem;
+		font-size: 1rem;
+	}
+}

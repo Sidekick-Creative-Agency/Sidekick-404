@@ -1,0 +1,15 @@
+@import 'tailwindcss';
+
+@layer base {
+	code {
+		@apply text-sm font-mono bg-neutral-900 px-1 rounded;
+	}
+	pre code {
+		/* Styles for code inside pre */
+		@apply bg-transparent p-0;
+	}
+	pre {
+		/* Styles for pre elements */
+		@apply bg-neutral-900 text-white p-4 rounded-lg overflow-x-auto;
+	}
+}

@@ -1,0 +1,16 @@
+.project-info_meta_list-item_link {
+  display: flex;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.project-info_meta_list-item_icon {
+  font-family: 'Fa Sharp';
+  font-size: 1rem;
+  font-weight: 400;
+}

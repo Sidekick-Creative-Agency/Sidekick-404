@@ -1,0 +1,49 @@
+.cursor-wrapper {
+  position: fixed;
+  left: 0px;
+  top: 0%;
+  right: 0%;
+  bottom: 0%;
+  z-index: 99999999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-auto-columns: 1fr;
+  grid-column-gap: 16px;
+  grid-row-gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+
+  pointer-events: none;
+
+  cursor: none;
+}
+
+@media screen and (max-width: 991px) {
+  .cursor-wrapper {
+    display: none;
+  }
+}
+
+.cursor-dot-container {
+  position: relative;
+}
+
+.cursor-dot-inner {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: transparent;
+}
+
+.cursor-circle-container {
+  position: absolute;
+}
+
+.cursor-circle-inner {
+  width: 44px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+}

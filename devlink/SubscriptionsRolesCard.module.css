@@ -1,0 +1,104 @@
+.subscriptions-roles_card {
+  position: relative;
+
+  display: flex;
+  width: 100%;
+  padding: 0px;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  grid-column-gap: 1.5rem;
+  grid-row-gap: 1.5rem;
+  aspect-ratio: 2/3;
+
+  border-radius: 0.5rem;
+}
+
+.subscriptions-roles_card_image-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding-bottom: 125%;
+  border-radius: 0.5rem;
+}
+
+.absolute-image {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  right: auto;
+  bottom: auto;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.absolute-image.left-200 {
+  left: 200%;
+}
+
+.absolute-image.left-100 {
+  left: 100%;
+}
+
+.absolute-image._w-1-2 {
+  width: 50%;
+}
+
+.absolute-image._w-1-2.left-1-2 {
+  left: 50%;
+}
+
+.absolute-image.z-1 {
+  z-index: -1;
+}
+
+.grayscale-100 {
+  filter: grayscale(100%);
+}
+
+.saturation-0 {
+  filter: saturate(0%);
+}
+
+.absolute-image.z-1.parallax {
+  height: calc(100% + 5rem);
+}
+
+.absolute-image.object-fit-top {
+  object-position: 50% 0%;
+}
+
+.absolute-image.object-position-center-75 {
+  object-position: 50% 75%;
+}
+
+.absolute-image.object-position-bottom {
+  object-position: 50% 100%;
+}
+
+.absolute-image.object-position-center-25 {
+  object-position: 50% 25%;
+}
+
+.subscriptions-roles_card_content {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  grid-column-gap: 0.5rem;
+  grid-row-gap: 0.5rem;
+}
+
+.subscriptions-roles_card_title {
+  font-size: 1.125rem;
+}
+
+.text-style-paragraph {
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.text-color-gray-03 {
+  color: var(--gray-03);
+}

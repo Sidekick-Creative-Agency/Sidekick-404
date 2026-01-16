@@ -1,0 +1,12 @@
+.header-spacer {
+  position: relative;
+  z-index: -1;
+  height: 6.5rem;
+  pointer-events: none;
+}
+
+@media screen and (max-width: 991px) {
+  .header-spacer {
+    height: 7rem;
+  }
+}
