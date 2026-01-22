@@ -11,6 +11,13 @@
         "database_id": "1234",
         "migrations_dir": "db/migrations"
         }
+    ],
+
+    "kv_namespaces": [
+        {
+            "binding": "GAME_SESSIONS",
+            "id": "YOUR_KV_NAMESPACE_ID"
+        }
     ]
 
 }

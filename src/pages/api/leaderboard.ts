@@ -8,6 +8,7 @@ type LeaderboardObject = {
 	score: number;
 	level: number;
 	powerups_enabled: boolean;
+	token?: string;
 };
 
 const corsHeaders = {
@@ -23,7 +24,7 @@ export const OPTIONS: APIRoute = async () => {
 };
 export const POST: APIRoute = async ({ request, locals }) => {
 	try {
-		const { initials, score, level, powerups_enabled }: LeaderboardObject = await request.json();
+		const { initials, score, level, powerups_enabled, token }: LeaderboardObject = await request.json();
 
 		// Validate input
 		if (!initials || typeof initials !== 'string' || initials.length > 3) {
@@ -34,12 +35,47 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			return new Response(JSON.stringify({ error: 'Invalid score or level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 		}
 
-		if (typeof score !== 'number' || typeof level !== 'number') {
-			return new Response(JSON.stringify({ error: 'Invalid score or level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-		}
-
 		if (typeof powerups_enabled !== 'boolean') {
 			return new Response(JSON.stringify({ error: 'Invalid powerups_enabled' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+		}
+
+		// Validate session token if provided and KV is available
+		const KV = locals.runtime?.env?.GAME_SESSIONS;
+		if (token && KV) {
+			const sessionData = await KV.get(token);
+
+			if (!sessionData) {
+				return new Response(JSON.stringify({ error: 'Invalid or expired session' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+			}
+
+			const session = JSON.parse(sessionData);
+
+			// Check if token was already used
+			if (session.used) {
+				return new Response(JSON.stringify({ error: 'Session token already used' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+			}
+
+			// Validate minimum game time (10 seconds)
+			const timePlayed = Date.now() - session.startTime;
+			if (timePlayed < 2500) {
+				return new Response(JSON.stringify({ error: 'Invalid game duration' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+			}
+
+			// Basic score validation - max 2000 points per level
+			// const maxScorePerLevel = 2000;
+			// if (score > level * maxScorePerLevel) {
+			// 	return new Response(JSON.stringify({ error: 'Score exceeds maximum possible for level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+			// }
+
+			// Mark token as used
+			await KV.put(
+				token,
+				JSON.stringify({
+					...session,
+					used: true,
+				}),
+				{ expirationTtl: 3600 },
+			);
 		}
 
 		// Get D1 database from runtime

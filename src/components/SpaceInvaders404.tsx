@@ -51,6 +51,11 @@ interface LeaderboardEntry {
     createdAt: string;
 }
 
+interface GameSession {
+    token: string;
+    startTime: number;
+}
+
 const GAME_WIDTH = 1920; // Fixed game resolution width
 const GAME_HEIGHT = 1080; // Fixed game resolution height
 const PLAYER_SIZE = 50;
@@ -104,6 +109,7 @@ export default function SpaceInvaders404() {
     const enemySpeedRef = useRef(1);
     const touchXRef = useRef<number | null>(null);
     const isTouchingRef = useRef(false);
+    const gameTokenRef = useRef<string | null>(null);
 
     // Drag handlers for instructions modal
     const handleInstructionsMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -217,7 +223,7 @@ export default function SpaceInvaders404() {
     useEffect(() => {
         const fetchLeaderboard = async () => {
             try {
-                const response = await fetch('/api/leaderboard');
+                const response = await fetch(`${import.meta.env.PROD ? '/not-found' : ''}/api/leaderboard`);
                 if (response.ok) {
                     const { leaderboard } = await response.json() as { leaderboard: LeaderboardEntry[] };
                     setLeaderboardData(leaderboard || []);
@@ -297,7 +303,24 @@ export default function SpaceInvaders404() {
         return enemies;
     };
 
-    const startGame = () => {
+    const startGame = async () => {
+        // Fetch a session token from the server
+        try {
+            const response = await fetch(`${import.meta.env.PROD ? '/not-found' : ''}/api/game/start`, {
+                method: 'POST',
+            });
+            if (response.ok) {
+                const { token } = await response.json() as GameSession;
+                gameTokenRef.current = token;
+            } else {
+                console.warn('Failed to get game session token');
+                gameTokenRef.current = null;
+            }
+        } catch (error) {
+            console.error('Error fetching game session:', error);
+            gameTokenRef.current = null;
+        }
+
         setGameStarted(true);
         setGameOver(false);
         setScore(0);
@@ -329,7 +352,7 @@ export default function SpaceInvaders404() {
         e.preventDefault();
         if (initials.trim().length > 0) {
             try {
-                const response = await fetch('/api/leaderboard', {
+                const response = await fetch(`${import.meta.env.PROD ? '/not-found' : ''}/api/leaderboard`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -339,16 +362,16 @@ export default function SpaceInvaders404() {
                         score,
                         level,
                         powerups_enabled: dualShot || fastShot,
+                        token: gameTokenRef.current,
                     }),
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Leaderboard entry saved:', data);
                     setInitialsSubmitted(true);
 
                     // Refresh leaderboard
-                    const leaderboardResponse = await fetch('/api/leaderboard');
+                    const leaderboardResponse = await fetch(`${import.meta.env.PROD ? '/not-found' : ''}/api/leaderboard`);
                     if (leaderboardResponse.ok) {
                         const { leaderboard } = await leaderboardResponse.json() as { leaderboard: LeaderboardEntry[] };
                         setLeaderboardData(leaderboard || []);
