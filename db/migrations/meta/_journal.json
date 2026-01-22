@@ -8,6 +8,13 @@
       "when": 1768603360945,
       "tag": "0000_bitter_blur",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769103229925,
+      "tag": "0001_stiff_greymalkin",
+      "breakpoints": true
     }
   ]
 }

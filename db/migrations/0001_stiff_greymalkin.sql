@@ -1,0 +1,1 @@
+ALTER TABLE `leaderboard` ADD `powerups_enabled` integer NOT NULL;

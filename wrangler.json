@@ -7,9 +7,9 @@
     "d1_databases": [
         {
         "binding": "DB",
-        "database_name": "404_leaderboard",
-        "database_id": "27d2ded9-37fa-4081-9e4b-09b801a8eb91",
-        "migrations_dir": "./db/migrations"
+        "database_name": "db",
+        "database_id": "1234",
+        "migrations_dir": "db/migrations"
         }
     ]
 

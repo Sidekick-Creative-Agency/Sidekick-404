@@ -6,7 +6,9 @@ import twoFaceIcon from '../assets/two_face_icon.svg';
 import poisonIvyIcon from '../assets/poison_ivy_icon.svg';
 import sidekickLogo from '../assets/sidekick-logo-icon-white.svg';
 import notFoundImage from '../assets/404.svg';
-import { ArrowRight, X } from 'lucide-react';
+import checkMarkIcon from '../assets/circle-check-sharp-regular-full.svg';
+import xMarkIcon from '../assets/circle-xmark-sharp-regular-full.svg';
+import { ArrowRight, ChevronDown, ChevronUp, X } from 'lucide-react';
 import userBullet from '../assets/user_bullet.svg';
 
 
@@ -45,6 +47,7 @@ interface LeaderboardEntry {
     initials: string;
     score: number;
     level: number;
+    powerups_enabled: boolean;
     createdAt: string;
 }
 
@@ -76,11 +79,18 @@ export default function SpaceInvaders404() {
     const [lives, setLives] = useState(1);
     const [level, setLevel] = useState(1);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [instructionsPosition, setInstructionsPosition] = useState({ x: 0, y: 0 });
+    const [isDraggingInstructions, setIsDraggingInstructions] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [dualShot, setDualShot] = useState(false);
     const [fastShot, setFastShot] = useState(false);
     const [initials, setInitials] = useState('');
     const [initialsSubmitted, setInitialsSubmitted] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+    const [leaderboardMinimized, setLeaderboardMinimized] = useState(false);
+    const [leaderboardPosition, setLeaderboardPosition] = useState({ x: 0, y: 0 });
+    const [isDraggingLeaderboard, setIsDraggingLeaderboard] = useState(false);
+    const [leaderboardDragOffset, setLeaderboardDragOffset] = useState({ x: 0, y: 0 });
 
     const playerRef = useRef<Position>({ x: 0, y: 0 });
     const enemiesRef = useRef<Enemy[]>([]);
@@ -94,6 +104,94 @@ export default function SpaceInvaders404() {
     const enemySpeedRef = useRef(1);
     const touchXRef = useRef<number | null>(null);
     const isTouchingRef = useRef(false);
+
+    // Drag handlers for instructions modal
+    const handleInstructionsMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        // If this is the first drag (position is still 0,0), calculate the actual position
+        if (instructionsPosition.x === 0 && instructionsPosition.y === 0) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const actualPosition = { x: rect.left, y: rect.top };
+            setInstructionsPosition(actualPosition);
+            setDragOffset({
+                x: e.clientX - actualPosition.x,
+                y: e.clientY - actualPosition.y,
+            });
+        } else {
+            setDragOffset({
+                x: e.clientX - instructionsPosition.x,
+                y: e.clientY - instructionsPosition.y,
+            });
+        }
+        setIsDraggingInstructions(true);
+    };
+
+    const handleInstructionsMouseMove = (e: MouseEvent) => {
+        if (isDraggingInstructions) {
+            setInstructionsPosition({
+                x: e.clientX - dragOffset.x,
+                y: e.clientY - dragOffset.y,
+            });
+        }
+    };
+
+    const handleInstructionsMouseUp = () => {
+        setIsDraggingInstructions(false);
+    };
+
+    useEffect(() => {
+        if (isDraggingInstructions) {
+            window.addEventListener('mousemove', handleInstructionsMouseMove);
+            window.addEventListener('mouseup', handleInstructionsMouseUp);
+            return () => {
+                window.removeEventListener('mousemove', handleInstructionsMouseMove);
+                window.removeEventListener('mouseup', handleInstructionsMouseUp);
+            };
+        }
+    }, [isDraggingInstructions, dragOffset]);
+
+    // Drag handlers for leaderboard modal
+    const handleLeaderboardMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        // If this is the first drag (position is still 0,0), calculate the actual position
+        if (leaderboardPosition.x === 0 && leaderboardPosition.y === 0) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const actualPosition = { x: rect.left, y: rect.top };
+            setLeaderboardPosition(actualPosition);
+            setLeaderboardDragOffset({
+                x: e.clientX - actualPosition.x,
+                y: e.clientY - actualPosition.y,
+            });
+        } else {
+            setLeaderboardDragOffset({
+                x: e.clientX - leaderboardPosition.x,
+                y: e.clientY - leaderboardPosition.y,
+            });
+        }
+        setIsDraggingLeaderboard(true);
+    };
+
+    const handleLeaderboardMouseMove = (e: MouseEvent) => {
+        if (isDraggingLeaderboard) {
+            setLeaderboardPosition({
+                x: e.clientX - leaderboardDragOffset.x,
+                y: e.clientY - leaderboardDragOffset.y,
+            });
+        }
+    };
+
+    const handleLeaderboardMouseUp = () => {
+        setIsDraggingLeaderboard(false);
+    };
+
+    useEffect(() => {
+        if (isDraggingLeaderboard) {
+            window.addEventListener('mousemove', handleLeaderboardMouseMove);
+            window.addEventListener('mouseup', handleLeaderboardMouseUp);
+            return () => {
+                window.removeEventListener('mousemove', handleLeaderboardMouseMove);
+                window.removeEventListener('mouseup', handleLeaderboardMouseUp);
+            };
+        }
+    }, [isDraggingLeaderboard, leaderboardDragOffset]);
 
     // Load images
     const playerImageRef = useRef<HTMLImageElement>(null);
@@ -121,8 +219,8 @@ export default function SpaceInvaders404() {
             try {
                 const response = await fetch('/api/leaderboard');
                 if (response.ok) {
-                    const data = await response.json();
-                    setLeaderboardData(data.leaderboard || []);
+                    const { leaderboard } = await response.json() as { leaderboard: LeaderboardEntry[] };
+                    setLeaderboardData(leaderboard || []);
                 }
             } catch (error) {
                 console.error('Error fetching leaderboard:', error);
@@ -240,6 +338,7 @@ export default function SpaceInvaders404() {
                         initials: initials.toUpperCase(),
                         score,
                         level,
+                        powerups_enabled: dualShot || fastShot,
                     }),
                 });
 
@@ -251,8 +350,8 @@ export default function SpaceInvaders404() {
                     // Refresh leaderboard
                     const leaderboardResponse = await fetch('/api/leaderboard');
                     if (leaderboardResponse.ok) {
-                        const leaderboardData = await leaderboardResponse.json();
-                        setLeaderboardData(leaderboardData.leaderboard || []);
+                        const { leaderboard } = await leaderboardResponse.json() as { leaderboard: LeaderboardEntry[] };
+                        setLeaderboardData(leaderboard || []);
                     }
                 } else {
                     console.error('Failed to save leaderboard entry');
@@ -674,28 +773,74 @@ export default function SpaceInvaders404() {
 
                 {/* Leaderboard in bottom-left */}
                 {leaderboardData.length > 0 && (
-                    <div className="fixed bottom-8 left-8 bg-white!/10 bg-opacity-50 px-6 py-6 rounded-lg text-sm backdrop-blur-sm max-w-xs" style={{ boxShadow: 'inset 1px 1px 1px -1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px -1px rgba(255, 255, 255, 0.5)' }}>
-                        <h3 className="text-lg font-bold mb-4 text-center">Top Scores</h3>
-                        <div className="space-y-2">
-                            {leaderboardData.slice(0, 10).map((entry, index) => (
-                                <div key={entry.id} className="flex items-center justify-between gap-4">
-                                    <span className="text-white!/60 font-mono text-xs">{index + 1}.</span>
-                                    <span className="font-bold tracking-wider">{entry.initials}</span>
-                                    <span className="flex-1 text-right">{entry.score.toLocaleString()}</span>
-                                    <span className="text-white!/60 text-xs">L{entry.level}</span>
+                    <div
+                        className="lg:fixed bg-white!/10 bg-opacity-50 rounded-lg text-sm backdrop-blur-sm max-w-xs lg:cursor-move select-none"
+                        style={{
+                            boxShadow: 'inset 1px 1px 1px -1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px -1px rgba(255, 255, 255, 0.5)',
+                            bottom: leaderboardPosition.x === 0 && leaderboardPosition.y === 0 ? '2rem' : 'auto',
+                            right: leaderboardPosition.x !== 0 ? 'auto' : 'auto',
+                            top: leaderboardPosition.y !== 0 ? `${leaderboardPosition.y}px` : 'auto',
+                            left: leaderboardPosition.x !== 0 ? `${leaderboardPosition.x}px` : (leaderboardPosition.x === 0 && leaderboardPosition.y === 0 ? '2rem' : 'auto'),
+                        }}
+                        onMouseDown={handleLeaderboardMouseDown}
+                    >
+                        <div className="px-6 py-6">
+
+                            <button
+                                className="w-full text-white flex items-center justify-between gap-2 cursor-pointer"
+                                aria-label={leaderboardMinimized ? "Maximize leaderboard" : "Minimize leaderboard"}
+                                onClick={() => setLeaderboardMinimized(!leaderboardMinimized)}
+                                onMouseDown={(e) => e.stopPropagation()}
+                            >
+                                <h3 className="text-base font-bold">Top Scores</h3>
+
+                                {leaderboardMinimized ? <ChevronDown aria-hidden="true" size={16} /> : <ChevronUp aria-hidden="true" size={16} />}
+                            </button>
+
+                            {!leaderboardMinimized && (
+                                <div className="space-y-2 mt-4">
+                                    {leaderboardData.slice(0, 10).map((entry, index) => (
+                                        <div key={entry.id} className="flex items-center justify-between gap-4">
+                                            <span className="text-white!/60 font-mono text-xs">{index + 1}.</span>
+                                            <span className="font-bold tracking-wider">{entry.initials}</span>
+                                            <span className="flex-1 text-right">{entry.score.toLocaleString()}</span>
+                                            <span className="text-white!/60 text-xs">L{entry.level}</span>
+                                            {/* <span className="text-white!/60 text-xs">PUs {entry.powerups_enabled ? <img
+                                                src={checkMarkIcon.src}
+                                                alt=""
+                                                className="w-4 h-4 text-white fill-white inline"
+                                                aria-hidden="true" /> : <img
+                                                src={xMarkIcon.src}
+                                                alt=""
+                                                className="w-4 h-4 text-white fill-white inline"
+                                                aria-hidden="true" />}</span> */}
+
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 )}
 
                 {/* Instructions box in bottom-right with close button */}
                 {showInstructions && (
-                    <div className="fixed bottom-8 right-8 bg-white!/10 bg-opacity-50 px-10 py-8 rounded-lg text-sm backdrop-blur-sm" style={{ boxShadow: 'inset 1px 1px 1px -1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px -1px rgba(255, 255, 255, 0.5)' }}>
+                    <div
+                        className="lg:fixed bg-white!/10 bg-opacity-50 px-10 py-8 rounded-lg text-sm backdrop-blur-sm lg:cursor-move select-none"
+                        style={{
+                            boxShadow: 'inset 1px 1px 1px -1px rgba(255, 255, 255, 0.5), inset -1px -1px 1px -1px rgba(255, 255, 255, 0.5)',
+                            bottom: instructionsPosition.x === 0 && instructionsPosition.y === 0 ? '2rem' : 'auto',
+                            right: instructionsPosition.x === 0 && instructionsPosition.y === 0 ? '2rem' : 'auto',
+                            left: instructionsPosition.x !== 0 ? `${instructionsPosition.x}px` : 'auto',
+                            top: instructionsPosition.y !== 0 ? `${instructionsPosition.y}px` : 'auto',
+                        }}
+                        onMouseDown={handleInstructionsMouseDown}
+                    >
                         <button
-                            className="absolute top-2 right-2 text-gray-400 hover:text-white!"
+                            className="hidden lg:block absolute top-2 right-2 text-gray-400 hover:text-white!"
                             aria-label="Close instructions"
                             onClick={() => setShowInstructions(false)}
+                            onMouseDown={(e) => e.stopPropagation()}
                         >
                             <X size={16} />
                         </button>

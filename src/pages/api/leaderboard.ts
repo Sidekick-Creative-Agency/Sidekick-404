@@ -1,10 +1,29 @@
 import type { APIRoute } from 'astro';
 import { desc } from 'drizzle-orm';
-import { createDb, leaderboard } from '../../../db';
+import { getDb } from '../../../db';
+import { leaderboard } from '../../../db/schema';
 
+type LeaderboardObject = {
+	initials: string;
+	score: number;
+	level: number;
+	powerups_enabled: boolean;
+};
+
+const corsHeaders = {
+	'Access-Control-Allow-Origin': '*', // Or specify your domain instead of *
+	'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+	'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export const OPTIONS: APIRoute = async () => {
+	return new Response(null, {
+		headers: corsHeaders,
+	});
+};
 export const POST: APIRoute = async ({ request, locals }) => {
 	try {
-		const { initials, score, level } = await request.json();
+		const { initials, score, level, powerups_enabled }: LeaderboardObject = await request.json();
 
 		// Validate input
 		if (!initials || typeof initials !== 'string' || initials.length > 3) {
@@ -15,9 +34,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			return new Response(JSON.stringify({ error: 'Invalid score or level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 		}
 
+		if (typeof score !== 'number' || typeof level !== 'number') {
+			return new Response(JSON.stringify({ error: 'Invalid score or level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+		}
+
+		if (typeof powerups_enabled !== 'boolean') {
+			return new Response(JSON.stringify({ error: 'Invalid powerups_enabled' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+		}
+
 		// Get D1 database from runtime
-		const runtime = locals.runtime as { env: { DB: D1Database } };
-		const db = createDb(runtime.env.DB);
+		const db = getDb(locals);
 
 		// Insert the leaderboard entry
 		const result = await db
@@ -26,6 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 				initials: initials.toUpperCase(),
 				score,
 				level,
+				powerups_enabled: powerups_enabled,
 			})
 			.returning();
 
@@ -38,9 +65,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 export const GET: APIRoute = async ({ locals }) => {
 	try {
-		// Get D1 database from runtime
-		const runtime = locals.runtime as { env: { DB: D1Database } };
-		const db = createDb(runtime.env.DB);
+		const db = getDb(locals);
 
 		// Get top 10 scores
 		const topScores = await db.select().from(leaderboard).orderBy(desc(leaderboard.score)).limit(10);

@@ -6,6 +6,7 @@ export const leaderboard = sqliteTable('leaderboard', {
 	initials: text('initials').notNull(),
 	score: integer('score').notNull(),
 	level: integer('level').notNull(),
+	powerups_enabled: integer('powerups_enabled', { mode: 'boolean' }).notNull(),
 	createdAt: text('created_at')
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),
