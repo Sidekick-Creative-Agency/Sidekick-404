@@ -306,9 +306,7 @@ export default function SpaceInvaders404() {
     const startGame = async () => {
         // Fetch a session token from the server
         try {
-            const response = await fetch(`${import.meta.env.PROD ? '/not-found' : ''}/api/game/start`, {
-                method: 'POST',
-            });
+            const response = await fetch(`${import.meta.env.PROD ? '/not-found' : ''}/api/game/start`);
             if (response.ok) {
                 const { token } = await response.json() as GameSession;
                 gameTokenRef.current = token;

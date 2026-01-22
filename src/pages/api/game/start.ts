@@ -12,7 +12,7 @@ export const OPTIONS: APIRoute = async () => {
 	});
 };
 
-export const POST: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals }) => {
 	try {
 		// Generate a unique token
 		const token = crypto.randomUUID();

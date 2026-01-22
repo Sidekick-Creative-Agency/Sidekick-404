@@ -39,6 +39,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			return new Response(JSON.stringify({ error: 'Invalid powerups_enabled' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 		}
 
+		if (typeof token !== 'string') {
+			return new Response(JSON.stringify({ error: 'Invalid token' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+		}
+
 		// Validate session token if provided and KV is available
 		const KV = locals.runtime?.env?.GAME_SESSIONS;
 		if (token && KV) {
