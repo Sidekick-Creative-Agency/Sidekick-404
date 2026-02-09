@@ -8,6 +8,11 @@ import sidekickLogo from '../assets/sidekick-logo-icon-white.svg';
 import notFoundImage from '../assets/404.svg';
 import checkMarkIcon from '../assets/circle-check-sharp-regular-full.svg';
 import xMarkIcon from '../assets/circle-xmark-sharp-regular-full.svg';
+import userShotSound from '../assets/user_shot_sound.wav';
+import enemyShotSound from '../assets/enemy_shot_sound.wav';
+import explosionSound from '../assets/explosion.wav';
+import volumeOnIcon from '../assets/volume-sharp-regular-full.svg';
+import volumeOffIcon from '../assets/volume-slash-sharp-regular-full.svg';
 import { ArrowRight, ChevronDown, ChevronUp, X } from 'lucide-react';
 import userBullet from '../assets/user_bullet.svg';
 
@@ -96,6 +101,7 @@ export default function SpaceInvaders404() {
     const [leaderboardPosition, setLeaderboardPosition] = useState({ x: 0, y: 0 });
     const [isDraggingLeaderboard, setIsDraggingLeaderboard] = useState(false);
     const [leaderboardDragOffset, setLeaderboardDragOffset] = useState({ x: 0, y: 0 });
+    const [isMuted, setIsMuted] = useState(true);
 
     const playerRef = useRef<Position>({ x: 0, y: 0 });
     const enemiesRef = useRef<Enemy[]>([]);
@@ -110,6 +116,11 @@ export default function SpaceInvaders404() {
     const touchXRef = useRef<number | null>(null);
     const isTouchingRef = useRef(false);
     const gameTokenRef = useRef<string | null>(null);
+    const userShotAudioRef = useRef<HTMLAudioElement | null>(null);
+    const enemyShotAudioRef = useRef<HTMLAudioElement | null>(null);
+    const explosionAudioRef = useRef<HTMLAudioElement | null>(null);
+    const activeAudioRef = useRef<HTMLAudioElement[]>([]);
+    const isMutedRef = useRef(true);
 
     // Drag handlers for instructions modal
     const handleInstructionsMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -237,6 +248,18 @@ export default function SpaceInvaders404() {
     }, []);
 
     useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedMute = localStorage.getItem('spaceInvadersMuted');
+            if (savedMute === 'false') {
+                setIsMuted(false);
+                isMutedRef.current = false;
+            }
+        }
+
+        userShotAudioRef.current = new Audio(userShotSound);
+        enemyShotAudioRef.current = new Audio(enemyShotSound);
+        explosionAudioRef.current = new Audio(explosionSound);
+
         // Load player image
         const playerImg = new Image();
         playerImg.src = sidekickLogo.src;
@@ -255,6 +278,43 @@ export default function SpaceInvaders404() {
         bulletImg.src = userBullet.src;
         bulletImageRef.current = bulletImg;
     }, []);
+
+    const playSound = (audioRef: React.RefObject<HTMLAudioElement>) => {
+        if (isMutedRef.current) return;
+        const baseAudio = audioRef.current;
+        if (!baseAudio) return;
+        const audio = baseAudio.cloneNode(true) as HTMLAudioElement;
+        audio.volume = baseAudio.volume;
+        activeAudioRef.current.push(audio);
+        audio.addEventListener('ended', () => {
+            activeAudioRef.current = activeAudioRef.current.filter((item) => item !== audio);
+        });
+        audio.play().catch(() => {
+            // Ignore autoplay restrictions or play errors.
+        });
+    };
+
+    const stopActiveSounds = () => {
+        activeAudioRef.current.forEach((audio) => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+        activeAudioRef.current = [];
+    };
+
+    const toggleMute = () => {
+        setIsMuted((prev) => {
+            const next = !prev;
+            isMutedRef.current = next;
+            if (next) {
+                stopActiveSounds();
+            }
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('spaceInvadersMuted', String(next));
+            }
+            return next;
+        });
+    };
 
     const initializeEnemies = (currentLevel: number) => {
         const enemies: Enemy[] = [];
@@ -509,6 +569,7 @@ export default function SpaceInvaders404() {
                     isPlayerBullet: true,
                 });
             }
+            playSound(userShotAudioRef);
             lastShotTimeRef.current = Date.now();
         }
 
@@ -565,6 +626,7 @@ export default function SpaceInvaders404() {
                 y: randomEnemy.y + ENEMY_SIZE,
                 isPlayerBullet: false,
             });
+            playSound(enemyShotAudioRef);
             enemyShootTimerRef.current = 0;
         }
 
@@ -593,6 +655,7 @@ export default function SpaceInvaders404() {
                         enemy.alive = false;
                         createConfetti(enemy.x, enemy.y);
                         setScore((s) => s + (100 * level));
+                        playSound(explosionAudioRef);
                         return false;
                     }
                 }
@@ -602,6 +665,7 @@ export default function SpaceInvaders404() {
 
                 // Check collision with player
                 if (checkCollision(bullet, BULLET_SIZE, playerRef.current, PLAYER_SIZE)) {
+                    playSound(explosionAudioRef);
                     setLives((l) => {
                         const newLives = l - 1;
                         if (newLives <= 0) {
@@ -786,7 +850,6 @@ export default function SpaceInvaders404() {
                         <ArrowRight className="absolute opacity-0 transition-all right-4 top-1/2 transform -translate-y-1/2 group-hover:opacity-100 group-hover:right-6" size={16} />
                     </a>
                 </div>
-
                 {/* Sidekick logo at bottom center */}
                 <div className="absolute bottom-8">
                     <img src={sidekickLogo.src} alt="Sidekick" />
@@ -885,8 +948,30 @@ export default function SpaceInvaders404() {
                 </div>
             )}
             {gameStarted && (
-                <div className='flex gap-2 fixed top-2 left-2 lg:top-8 lg:left-8 z-50'>
-                    <button className="w-full text-center text-sm cursor-pointer underline text-white!/50! hover:text-white!!" onClick={() => setGameStarted(false)}>Quit Game</button>
+                <div className='flex gap-3 fixed top-2 left-2 lg:top-8 lg:left-8 z-50'>
+                    <button className="text-center text-sm cursor-pointer underline stext-white/50 hover:text-white" onClick={() => setGameStarted(false)}>Quit Game</button>
+                    <label className="flex items-center gap-3 text-sm cursor-pointer bg-transparent text-white!/50! hover:text-white!! rounded-full border border-white">
+                        <span className="relative inline-flex h-6 w-11 items-center">
+                            <input
+                                type="checkbox"
+                                checked={isMuted}
+                                onChange={toggleMute}
+                                className="peer sr-only"
+                            />
+                            <span className="absolute inset-0 rounded-full bg-white transition-colors peer-checked:shadow-none shadow-[0_0_10px_rgba(255,255,255,0.35)] peer-checked:bg-transparent " />
+                            <span className="absolute left-1 top-1 translate-x-5 flex h-4 w-4 items-center justify-center rounded-full bg-white transition-transform peer-checked:translate-x-0">
+                                <img
+                                    src={isMuted ? volumeOffIcon.src : volumeOnIcon.src}
+                                    alt=""
+                                    className="h-3 w-3"
+                                    aria-hidden="true"
+                                />
+                            </span>
+                        </span>
+                        <span className='sr-only'>
+                            Mute
+                        </span>
+                    </label>
                 </div>
             )}
 
