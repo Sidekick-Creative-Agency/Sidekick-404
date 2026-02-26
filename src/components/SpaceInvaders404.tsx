@@ -4,10 +4,9 @@ import jokerIcon from '../assets/joker_icon.svg';
 import riddlerIcon from '../assets/riddler_icon.svg';
 import twoFaceIcon from '../assets/two_face_icon.svg';
 import poisonIvyIcon from '../assets/poison_ivy_icon.svg';
+import harleyQuinnIcon from '../assets/harley_quinn_icon.svg';
 import sidekickLogo from '../assets/sidekick-logo-icon-white.svg';
 import notFoundImage from '../assets/404.svg';
-import checkMarkIcon from '../assets/circle-check-sharp-regular-full.svg';
-import xMarkIcon from '../assets/circle-xmark-sharp-regular-full.svg';
 import userShotSound from '../assets/user_shot_sound.wav';
 import enemyShotSound from '../assets/enemy_shot_sound.wav';
 import explosionSound from '../assets/explosion.wav';
@@ -74,9 +73,10 @@ const SHOT_TIMER = 300;
 const FAST_SHOT_TIMER = 50;
 
 const enemyIcons = [
-    baneIcon.src,
     jokerIcon.src,
     riddlerIcon.src,
+    harleyQuinnIcon.src,
+    baneIcon.src,
     twoFaceIcon.src,
     poisonIvyIcon.src,
 ];
@@ -850,10 +850,11 @@ export default function SpaceInvaders404() {
                         <ArrowRight className="absolute opacity-0 transition-all right-4 top-1/2 transform -translate-y-1/2 group-hover:opacity-100 group-hover:right-6" size={16} />
                     </a>
                 </div>
-                {/* Sidekick logo at bottom center */}
-                <div className="absolute bottom-8">
-                    <img src={sidekickLogo.src} alt="Sidekick" />
-                </div>
+                {dualShot && (
+                    <div className='mt-8 rounded-full py-2 px-6 bg-[#3c8dc7] text-white leading-none '>
+                        <p className='tracking-wide'>⚡ Powerup Enabled: Dual Shot ⚡</p>
+                    </div>
+                )}
 
                 {/* Leaderboard in bottom-left */}
                 {leaderboardData.length > 0 && (
@@ -1090,7 +1091,7 @@ export default function SpaceInvaders404() {
                                                         <ArrowRight className="absolute opacity-0 transition-all right-4 top-1/2 transform -translate-y-1/2 group-hover:opacity-100 group-hover:right-6" size={16} />
                                                     </button>
                                                     <a
-                                                        href="/app"
+                                                        href="/"
                                                         className="py-3.5 px-8 text-base font-semibold rounded-full border border-white! text-white! bg-transparent cursor-pointer relative transition-all hover:bg-white! hover:text-black! hover:pr-12 group"
                                                     >
                                                         Go Home
