@@ -35,6 +35,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			return new Response(JSON.stringify({ error: 'Invalid score or level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 		}
 
+		if (level % 1 !== 0 || level < 1) {
+			return new Response(JSON.stringify({ error: 'Invalid level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+		}
+
+		if (!isFinite(score) || score < 0) {
+			return new Response(JSON.stringify({ error: 'Invalid score' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+		}
+
+		let highestPossibleScore = 0;
+		for (let currentLevel = 1; currentLevel <= level; currentLevel++) {
+			const enemiesThisLevel = 15 + (currentLevel - 1) * 5;
+			const scorePerEnemy = 100 * currentLevel;
+			highestPossibleScore += enemiesThisLevel * scorePerEnemy;
+		}
+
+		if (score > highestPossibleScore) {
+			return new Response(JSON.stringify({ error: 'Score exceeds maximum possible for level progression' }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' },
+			});
+		}
+
 		if (typeof powerups_enabled !== 'boolean') {
 			return new Response(JSON.stringify({ error: 'Invalid powerups_enabled' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 		}
@@ -65,11 +87,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 				return new Response(JSON.stringify({ error: 'Invalid game duration' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
 			}
 
-			// Basic score validation - max 2000 points per level
-			// const maxScorePerLevel = 2000;
-			// if (score > level * maxScorePerLevel) {
-			// 	return new Response(JSON.stringify({ error: 'Score exceeds maximum possible for level' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
-			// }
 
 			// Mark token as used
 			await KV.put(
